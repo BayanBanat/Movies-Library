@@ -1,12 +1,25 @@
 'use strict'
 const express = require('express');
-const moviesData = require('./data.json');
+const cors= require('cors');
+const axios=require('axios');
+require('dotenv').config();
 const app = express();
-const port = 3000;
+app.use(cors());
+const PORT=process.env.PORT;
+const apiKey=process.env.API_KEY;
+
 
 
 
 app.get('/', homePageHandler);  //rout 1
+app.get('/favorite', favoriteHandler);  //rout 2
+app.get('/trending',trendingHandler) //rout 4
+app.get('/search',searchMoviesHandler) //rout 5
+app.get('/populerMovies', populerHandler) //rout 6
+app.get('/searchMovies',planeSearchMoviesHandler) //rout 7
+app.get('*', errorHandler);   //rout 3
+
+//function
 function homePageHandler(req, res) {
     let result = [];
     let newMovie = new Movie(moviesData.title, moviesData.poster_path, moviesData.overview);
@@ -23,44 +36,104 @@ function Movie(title, posterPath, overview) {
 
 }
 
-
-
-app.get('/favorite', favoriteHandler);  //rout 2
 function favoriteHandler(req, res) {
     res.send('Welcome to Favorite Page')
 }
 
-
-
-app.get('/error', errorHandler);   //rout 3
 function errorHandler(req, res) {
-
-const status = 500;
-// const status = 404;
-handleServerError(status,res);
-
+        res.status(404).send("Not Found")     
 }
-function handleServerError(status, res) {
-    if (status === 500) {
-        res.status(500).json(
-            {
-                "status": 500,
-                "responseText": "Sorry, something went wrong"
-            }
-        )
+ function trendingHandler(req,res){
+    let URL=`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`
+    axios.get(URL)
+    .then((result)=>{
+        let path=result.data.results;
+        let dataMovie=path.map((movie)=>{
+            return new MovieData(movie.id,movie.title,movie.release_date,movie.poster_path,movie.overview)
+        })
 
-    } else if (status === 404) {
-        res.status(400).json(
-            {
-                "status": 404,
-                "responseText": "Sorry, the page is not found"
-            }
-        )
+        res.json(dataMovie);
+    })
+    .catch((err)=>{
+        console.log(err);
 
-    }
-}
+    })
 
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+ }  
+ 
+ 
+ function populerHandler(req,res){
+    let URL=`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
+    axios.get(URL)
+    .then((result)=>{
+        let path=result.data.results;
+        let dataMovie=path.map((movie)=>{
+            return new MovieData(movie.id,movie.title,movie.release_date,movie.poster_path,movie.overview)
+        })
+
+        res.json(dataMovie);
+    })
+    .catch((err)=>{
+        console.log(err);
+
+    })
+
+
+ }  
+
+ function MovieData(id,title,releaseDate,posterPath,overview){
+    this.id=id;
+    this.title=title;
+    this.release_date=releaseDate;
+    this.poster_path=posterPath;
+    this.overview=overview;
+
+ }
+ function searchMoviesHandler(req,res){
+    let movieName = req.query.name
+    
+    let URL=`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${movieName}&page=2`
+    axios.get(URL)
+    .then((result)=>{
+        let path=result.data.results;
+        let searchMovieData=path.map((result)=>{
+            return new searchData(result.id,result.original_language,result.original_title,result.poster_path,result.release_date,result.overview)
+        })
+        res.json(searchMovieData);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+ }
+ function planeSearchMoviesHandler(req,res){
+   
+    let URL=`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=Plane&page=1&include_adult=false`
+    axios.get(URL)
+    .then((result)=>{
+        let path=result.data.results;
+        let searchMovieData=path.map((result)=>{
+            return new searchData(result.id,result.original_language,result.original_title,result.poster_path,result.release_date,result.overview)
+        })
+        res.json(searchMovieData);
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+ }
+
+ function searchData(id,language,title,posterPath,releaseDate,overview){
+    this.id=id;
+    this.original_language=language
+    this.title=title;
+    this.poster_path=posterPath;
+    this.release_date=releaseDate;
+    this.overview=overview;
+
+ }
+
+
+
+app.listen(PORT, () => {
+    console.log(`Example app listening on port ${PORT}`);
 })
