@@ -1,12 +1,17 @@
 'use strict'
 const express = require('express');
-const moviesData = require('./data.json');
+const axios=require('axios');
+require('dotenv').config();
 const app = express();
-const port = 3000;
-
+const PORT=process.env.PORT;
 
 
 app.get('/', homePageHandler);  //rout 1
+app.get('/favorite', favoriteHandler);  //rout 2
+app.get('/example',errorHandler2)
+app.get('*', errorHandler);   //rout 3
+
+//function
 function homePageHandler(req, res) {
     let result = [];
     let newMovie = new Movie(moviesData.title, moviesData.poster_path, moviesData.overview);
@@ -19,48 +24,30 @@ function Movie(title, posterPath, overview) {
     this.title = title;
     this.poster_path = posterPath;
     this.overview = overview;
-
-
 }
 
-
-
-app.get('/favorite', favoriteHandler);  //rout 2
 function favoriteHandler(req, res) {
     res.send('Welcome to Favorite Page')
 }
 
-
-
-app.get('/error', errorHandler);   //rout 3
 function errorHandler(req, res) {
-
-const status = 500;
-// const status = 404;
-handleServerError(status,res);
-
+        res.status(404).send("Not Found")     
 }
-function handleServerError(status, res) {
-    if (status === 500) {
-        res.status(500).json(
-            {
-                "status": 500,
-                "responseText": "Sorry, something went wrong"
-            }
-        )
 
-    } else if (status === 404) {
-        res.status(400).json(
-            {
-                "status": 404,
-                "responseText": "Sorry, the page is not found"
-            }
-        )
-
-    }
+function errorHandler2(req,res){
+    axios.get('https://example.com')
+    .then((result)=> {
+    res.json(result);
+    })
+    .catch((error)=> {
+        res.status(500).send("Sorry, something went wrong")
+    });
 }
 
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+
+ 
+
+app.listen(PORT, () => {
+    console.log(`Example app listening on port ${PORT}`);
 })

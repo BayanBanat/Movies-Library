@@ -6,7 +6,7 @@
 ## WRRC
 Add an image of your WRRC here
 
-![WRRC](WRRC.png)
+![WRRC](WRRC2.png)
 
 ## Overview
 I have used a thunder client to try if my work will
