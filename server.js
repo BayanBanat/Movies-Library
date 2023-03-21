@@ -9,10 +9,9 @@ const PORT=process.env.PORT;
 const apiKey=process.env.API_KEY;
 
 
-
-
 app.get('/', homePageHandler);  //rout 1
 app.get('/favorite', favoriteHandler);  //rout 2
+app.get('/example',errorHandler2)
 app.get('/trending',trendingHandler) //rout 4
 app.get('/search',searchMoviesHandler) //rout 5
 app.get('/populerMovies', populerHandler) //rout 6
@@ -43,6 +42,19 @@ function favoriteHandler(req, res) {
 function errorHandler(req, res) {
         res.status(404).send("Not Found")     
 }
+
+function errorHandler2(req,res){
+    axios.get('https://example.com')
+    .then((result)=> {
+    res.json(result);
+    })
+    .catch((error)=> {
+        res.status(500).send("Sorry, something went wrong")
+    });
+}
+
+
+
  function trendingHandler(req,res){
     let URL=`https://api.themoviedb.org/3/trending/all/week?api_key=${apiKey}`
     axios.get(URL)
