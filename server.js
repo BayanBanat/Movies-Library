@@ -53,8 +53,8 @@ function errorHandler(req, res) {
 
 
  
-function errorHandler2(err,req,res){
-    res.status(500).send(err)
+function errorHandler2(error,req,res){
+    res.status(500).send(error)
 }
 
 
@@ -70,8 +70,8 @@ function errorHandler2(err,req,res){
 
         res.json(dataMovie);
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
 
     })
 
@@ -90,8 +90,8 @@ function errorHandler2(err,req,res){
 
         res.json(dataMovie);
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
 
     })
 
@@ -118,8 +118,8 @@ function errorHandler2(err,req,res){
         })
         res.json(searchMovieData);
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
     })
  }
  function planeSearchMoviesHandler(req,res){
@@ -133,8 +133,8 @@ function errorHandler2(err,req,res){
         })
         res.json(searchMovieData);
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
     })
  }
 
@@ -156,8 +156,8 @@ function errorHandler2(err,req,res){
         console.log(req.body);
         res.status(201).json(result.rows)
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
     })
     
     
@@ -167,8 +167,8 @@ function errorHandler2(err,req,res){
     client.query(sql).then((result)=>{
         res.json(result.rows)
     })
-    .catch((error)=>{
-        errorHandler2(error,req,res);
+    .catch((err)=>{
+        errorHandler2(err,req,res);
     })
  }
 
@@ -178,8 +178,8 @@ function errorHandler2(err,req,res){
         console.log(`listening on port${PORT}`);
     })
 
-}).catch((error)=>{
-    errorHandler2(error,req,res);
+}).catch((err)=>{
+    errorHandler2(err,req,res);
 })
 
 
