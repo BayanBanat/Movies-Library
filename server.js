@@ -1,6 +1,6 @@
 'use strict'
 const express = require('express');
-// const cors= require('cors');
+const cors= require('cors');
 const axios=require('axios');
 const bodyParser = require('body-parser');
 const { Client } = require('pg');
@@ -10,7 +10,7 @@ const client = new Client(url);
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-// app.use(cors());
+app.use(cors());
 const PORT=process.env.PORT;
 const apiKey=process.env.API_KEY;
 
@@ -178,9 +178,7 @@ function errorHandler2(error,req,res){
         console.log(`listening on port${PORT}`);
     })
 
-}).catch((err)=>{
-    errorHandler2(err,req,res);
-})
+}).catch()
 
 
 
