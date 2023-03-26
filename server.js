@@ -17,13 +17,17 @@ const apiKey=process.env.API_KEY;
 // Routs:
 app.get('/', homePageHandler);  
 app.get('/favorite', favoriteHandler);  
-app.get('/example',errorHandler2)
-app.get('/trending',trendingHandler) 
-app.get('/search',searchMoviesHandler)
-app.get('/populerMovies', populerHandler)
-app.get('/searchMovies',planeSearchMoviesHandler)
-app.post('/addMoveis',addMoviesHandger)
-app.get('/getAllMovies',getAllMovies)
+// app.get('/example',errorHandler2);
+app.get('/trending',trendingHandler);
+app.get('/search',searchMoviesHandler);
+app.get('/populerMovies', populerHandler);
+app.get('/searchMovies',planeSearchMoviesHandler);
+app.post('/addMoveis',addMoviesHandger);
+app.get('/getAllMovies',getAllMovies);
+app.put('/UPDATE/:id',updateHandler);
+app.delete('/DELETE/:id',deletHandler);
+app.get('/getMovie/:id',getMovie);
+app.use(errorHandler2);
 app.get('*', errorHandler);   
 
 //function
@@ -148,12 +152,12 @@ function errorHandler2(error,req,res){
 
  }
  function addMoviesHandger(req,res){
-    let {title,poster_path,overview} =req.body; //destructuring
-    let sql=`INSERT INTO movies (title ,poster_path,overview)
-    VALUES ($1,$2,$3) RETURNING * `
-    let values=[title,poster_path,overview]
+    let {title,poster_path,overview,comment} =req.body; //destructuring
+    let sql=`INSERT INTO movies (title ,poster_path,overview,comment)
+    VALUES ($1,$2,$3,$4) RETURNING * `
+    let values=[title,poster_path,overview,comment]
     client.query(sql,values).then((result)=>{
-        console.log(req.body);
+        // console.log(req.body);
         res.status(201).json(result.rows)
     })
     .catch((err)=>{
@@ -170,6 +174,36 @@ function errorHandler2(error,req,res){
     .catch((err)=>{
         errorHandler2(err,req,res);
     })
+ }
+ function updateHandler(req,res){
+    let movieName = req.params.id;
+    let {title,poster_path,overview,comment,id} =req.body;
+    let sql=`UPDATE movies SET title = $1, poster_path = $2,overview =$3 ,comment=$4
+    WHERE id = $5 RETURNING *;`;
+    let values=[title,poster_path,overview,comment,id];
+    client.query(sql,values).then(result=>{
+        res.send(result.rows)
+    }).catch()
+
+ }
+ function deletHandler(req,res){
+    let {id} = req.params;
+    let sql=`DELETE FROM movies WHERE id = $1;` ;
+    let values = [id];
+    client.query(sql,values).then(result=>{
+        res.status(204).send("deleted");
+    }).catch()
+ }
+ function getMovie(req,res){
+    let {id} = req.params;
+    let sql=`SELECT * FROM movies WHERE id = ${id};`;
+    client.query(sql).then((result)=>{
+        res.json(result.rows)
+    })
+    .catch((err)=>{
+        errorHandler2(err,req,res);
+    })
+    
  }
 
 
