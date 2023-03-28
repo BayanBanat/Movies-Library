@@ -2,21 +2,33 @@
 const express = require('express');
 const cors= require('cors');
 const axios=require('axios');
+const bodyParser = require('body-parser');
+const { Client } = require('pg');
 require('dotenv').config();
+const url=process.env.URL;
+const client = new Client(url);
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(cors());
 const PORT=process.env.PORT;
 const apiKey=process.env.API_KEY;
 
-
-app.get('/', homePageHandler);  //rout 1
-app.get('/favorite', favoriteHandler);  //rout 2
-app.get('/example',errorHandler2)
-app.get('/trending',trendingHandler) //rout 4
-app.get('/search',searchMoviesHandler) //rout 5
-app.get('/populerMovies', populerHandler) //rout 6
-app.get('/searchMovies',planeSearchMoviesHandler) //rout 7
-app.get('*', errorHandler);   //rout 3
+// Routs:
+app.get('/', homePageHandler);  
+app.get('/favorite', favoriteHandler);  
+// app.get('/example',errorHandler2);
+app.get('/trending',trendingHandler);
+app.get('/search',searchMoviesHandler);
+app.get('/populerMovies', populerHandler);
+app.get('/searchMovies',planeSearchMoviesHandler);
+app.post('/addMoveis',addMoviesHandger);
+app.get('/getAllMovies',getAllMovies);
+app.put('/UPDATE/:id',updateHandler);
+app.delete('/DELETE/:id',deletHandler);
+app.get('/getMovie/:id',getMovie);
+app.use(errorHandler2);
+app.get('*', errorHandler);   
 
 //function
 function homePageHandler(req, res) {
@@ -24,7 +36,7 @@ function homePageHandler(req, res) {
     let newMovie = new Movie(moviesData.title, moviesData.poster_path, moviesData.overview);
     result.push(newMovie);
     res.json(result);
-    // console.log("bayan");
+    console.log("bayan");
 
 }
 function Movie(title, posterPath, overview) {
@@ -43,14 +55,10 @@ function errorHandler(req, res) {
         res.status(404).send("Not Found")     
 }
 
-function errorHandler2(req,res){
-    axios.get('https://example.com')
-    .then((result)=> {
-    res.json(result);
-    })
-    .catch((error)=> {
-        res.status(500).send("Sorry, something went wrong")
-    });
+
+ 
+function errorHandler2(error,req,res){
+    res.status(500).send(error)
 }
 
 
@@ -67,7 +75,7 @@ function errorHandler2(req,res){
         res.json(dataMovie);
     })
     .catch((err)=>{
-        console.log(err);
+        errorHandler2(err,req,res);
 
     })
 
@@ -87,7 +95,7 @@ function errorHandler2(req,res){
         res.json(dataMovie);
     })
     .catch((err)=>{
-        console.log(err);
+        errorHandler2(err,req,res);
 
     })
 
@@ -115,7 +123,7 @@ function errorHandler2(req,res){
         res.json(searchMovieData);
     })
     .catch((err)=>{
-        console.log(err);
+        errorHandler2(err,req,res);
     })
  }
  function planeSearchMoviesHandler(req,res){
@@ -130,7 +138,7 @@ function errorHandler2(req,res){
         res.json(searchMovieData);
     })
     .catch((err)=>{
-        console.log(err);
+        errorHandler2(err,req,res);
     })
  }
 
@@ -143,9 +151,71 @@ function errorHandler2(req,res){
     this.overview=overview;
 
  }
+ function addMoviesHandger(req,res){
+    let {title,poster_path,overview,comment} =req.body; //destructuring
+    let sql=`INSERT INTO movies (title ,poster_path,overview,comment)
+    VALUES ($1,$2,$3,$4) RETURNING * `
+    let values=[title,poster_path,overview,comment]
+    client.query(sql,values).then((result)=>{
+        // console.log(req.body);
+        res.status(201).json(result.rows)
+    })
+    .catch((err)=>{
+        errorHandler2(err,req,res);
+    })
+    
+    
+ }
+ function getAllMovies(req,res){
+    let sql=`SELECT * FROM movies`;
+    client.query(sql).then((result)=>{
+        res.json(result.rows)
+    })
+    .catch((err)=>{
+        errorHandler2(err,req,res);
+    })
+ }
+ function updateHandler(req,res){
+    let movieName = req.params.id;
+    let {title,poster_path,overview,comment} =req.body;
+    let values=[title,poster_path,overview,comment,movieName];
+    let sql=`UPDATE movies SET title = $1, poster_path = $2,overview =$3 ,comment=$4
+    WHERE id = $5 RETURNING *;`;
+    
+    client.query(sql,values).then(result=>{
+        res.send(result.rows)
+    }).catch()
+
+ }
+ function deletHandler(req,res){
+    let id = req.params.id;
+     let values = [id];
+    let sql=`DELETE FROM movies WHERE id = $1;` ;
+   
+    client.query(sql,values).then(result=>{
+        res.status(204).send("deleted");
+    }).catch()
+ }
+ function getMovie(req,res){
+    let id = req.params.id;
+    let values=[id];
+    let sql=`SELECT * FROM movies WHERE id = $1;`;
+    client.query(sql,values).then((result)=>{
+        res.json(result.rows)
+    })
+    .catch((err)=>{
+        errorHandler2(err,req,res);
+    })
+    
+ }
+
+
+ client.connect().then(()=>{
+    app.listen(PORT,()=>{
+        console.log(`listening on port${PORT}`);
+    })
+
+}).catch()
 
 
 
-app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`);
-})
