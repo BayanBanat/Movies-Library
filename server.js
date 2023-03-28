@@ -177,10 +177,10 @@ function errorHandler2(error,req,res){
  }
  function updateHandler(req,res){
     let movieName = req.params.id;
-    let {title,poster_path,overview,comment,id} =req.body;
+    let {title,poster_path,overview,comment} =req.body;
     let sql=`UPDATE movies SET title = $1, poster_path = $2,overview =$3 ,comment=$4
-    WHERE id = $5 RETURNING *;`;
-    let values=[title,poster_path,overview,comment,id];
+    WHERE id = ${movieName} RETURNING *;`;
+    let values=[title,poster_path,overview,comment];
     client.query(sql,values).then(result=>{
         res.send(result.rows)
     }).catch()
@@ -188,9 +188,9 @@ function errorHandler2(error,req,res){
  }
  function deletHandler(req,res){
     let {id} = req.params;
-    let sql=`DELETE FROM movies WHERE id = $1;` ;
-    let values = [id];
-    client.query(sql,values).then(result=>{
+    let sql=`DELETE FROM movies WHERE id = ${id};` ;
+    // let values = [id];
+    client.query(sql).then(result=>{
         res.status(204).send("deleted");
     }).catch()
  }
