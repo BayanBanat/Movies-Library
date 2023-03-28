@@ -178,26 +178,29 @@ function errorHandler2(error,req,res){
  function updateHandler(req,res){
     let movieName = req.params.id;
     let {title,poster_path,overview,comment} =req.body;
+    let values=[title,poster_path,overview,comment,movieName];
     let sql=`UPDATE movies SET title = $1, poster_path = $2,overview =$3 ,comment=$4
-    WHERE id = ${movieName} RETURNING *;`;
-    let values=[title,poster_path,overview,comment];
+    WHERE id = $5 RETURNING *;`;
+    
     client.query(sql,values).then(result=>{
         res.send(result.rows)
     }).catch()
 
  }
  function deletHandler(req,res){
-    let {id} = req.params;
-    let sql=`DELETE FROM movies WHERE id = ${id};` ;
-    // let values = [id];
-    client.query(sql).then(result=>{
+    let id = req.params.id;
+     let values = [id];
+    let sql=`DELETE FROM movies WHERE id = $1;` ;
+   
+    client.query(sql,values).then(result=>{
         res.status(204).send("deleted");
     }).catch()
  }
  function getMovie(req,res){
-    let {id} = req.params;
-    let sql=`SELECT * FROM movies WHERE id = ${id};`;
-    client.query(sql).then((result)=>{
+    let id = req.params.id;
+    let values=[id];
+    let sql=`SELECT * FROM movies WHERE id = $1;`;
+    client.query(sql,values).then((result)=>{
         res.json(result.rows)
     })
     .catch((err)=>{
